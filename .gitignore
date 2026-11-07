@@ -1,0 +1,15 @@
+# Virtual env.
+venv
+
+# Mac files
+.DS_Store
+
+#cahce files
+__pycache__/
+*.pyc
+
+# MediaPipe hand landmarker model
+hand_landmarker.task
+
+# VsCode settings
+.vscode/
