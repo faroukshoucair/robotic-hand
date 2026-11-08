@@ -15,7 +15,6 @@ options = HandLandmarkerOptions(
 )
 
 
-
 def main():
 
     # connects to defaults laptop camera 
@@ -47,7 +46,17 @@ def main():
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_image)
         timestamp_ms = round(((time.time() - start_time) * 1000))
 
+        # detect 21 landmarks on hand
+        # returns a list of list of 21 handmarks on each hand
         result = detector.detect_for_video(mp_image, timestamp_ms)
+
+        # Draw 21 landmarks on hand if detected
+        if result.hand_landmarks:
+            hand = result.hand_landmarks[0]
+            drawLandmarks = mp.tasks.vision.drawing_utils.draw_landmarks
+            HAND_CONNECTIONS = mp.tasks.vision.HandLandmarksConnections.HAND_CONNECTIONS
+            drawLandmarks(frame, hand, HAND_CONNECTIONS)
+
 
         # display frame
         cv2.imshow("Robot hand tracker", frame)
@@ -56,7 +65,7 @@ def main():
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
-    # close camera window   
+    # close camera window, stop hand detection, close camera
     cam.release()
     detector.close()
     cv2.destroyAllWindows()
