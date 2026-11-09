@@ -25,6 +25,9 @@ HandLandmarker = mp.tasks.vision.HandLandmarker
 HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
 VisionRunningMode = mp.tasks.vision.RunningMode
 
+draw_landmarks = mp.tasks.vision.drawing_utils.draw_landmarks
+HAND_CONNECTIONS = mp.tasks.vision.HandLandmarksConnections.HAND_CONNECTIONS
+
 # settings for hand detector
 options = HandLandmarkerOptions(
     base_options=BaseOptions(model_asset_path="hand_landmarker.task"),
@@ -71,11 +74,21 @@ def main():
         # Draw 21 landmarks on hand if detected
         if result.hand_landmarks:
             hand = result.hand_landmarks[0]
-            drawLandmarks = mp.tasks.vision.drawing_utils.draw_landmarks
-            HAND_CONNECTIONS = mp.tasks.vision.HandLandmarksConnections.HAND_CONNECTIONS
-            drawLandmarks(frame, hand, HAND_CONNECTIONS)
+            draw_landmarks(frame, hand, HAND_CONNECTIONS)
 
+            world = result.hand_world_landmarks[0] # The shape of the hand in 3d
 
+            thumb_bend_angle = bend_angle(world, [0, 1, 2, 3, 4])
+            index_bend_angle = bend_angle(world, [0, 5, 6, 7, 8])
+            middle_bend_angle = bend_angle(world, [0, 9, 10, 11, 12])
+            ring_bend_angle = bend_angle(world, [0, 13, 14, 15, 16])
+            pinky_bend_angle = bend_angle(world, [0, 17, 18, 19, 20])
+
+            print(f"Thumb angle: {thumb_bend_angle:.2f}")
+            print(f"Index angle: {index_bend_angle:.2f}")
+            print(f"Middle angle: {middle_bend_angle:.2f}")
+            print(f"Ring angle: {ring_bend_angle:.2f}")
+            print(f"Pinky angle: {pinky_bend_angle:.2f}")
 
         # display frame
         cv2.imshow("Robot hand tracker", frame)
@@ -90,14 +103,14 @@ def main():
     cv2.destroyAllWindows()
 
 
-# measures the angle in degrees between two bones
+# Measures the angle in degrees between two bones
 def angle(bone1, bone2):
     dot_prod = np.dot(bone1, bone2)
     len_bone1 = np.linalg.norm(bone1)
     len_bone2 = np.linalg.norm(bone2)
 
     # safety check: zero-length vector has no angle
-    if len_bone2 == 0 or len_bone2 == 0:
+    if len_bone1 == 0 or len_bone2 == 0:
         return 0.0
 
     cos_theta = dot_prod / (len_bone1 * len_bone2)
@@ -107,6 +120,26 @@ def angle(bone1, bone2):
 
     theta_deg = np.degrees(np.arccos(cos_theta))
     return theta_deg
+
+
+
+# Measures the angle of each finger
+def bend_angle(world, ids):
+
+    points = []
+    for i in ids:
+        points.append(np.array([world[i].x, world[i].y, world[i].z]))
+
+    bones = []
+    for i in range(0, len(points) - 1):
+        bones.append(points[i+1] - points[i])
+
+    total_angle_bend = 0
+    for i in range(0, len(bones) - 1):
+        total_angle_bend += angle(bones[i], bones[i+1])
+
+    return total_angle_bend
+
 
 if __name__ == "__main__":
     main()
