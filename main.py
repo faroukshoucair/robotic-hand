@@ -1,6 +1,24 @@
 import cv2 # import opencv
 import mediapipe as mp
 import time
+import numpy as np
+
+# Hand landmark model
+
+# ID	Landmark	    ID	Landmark
+# 0	WRIST	            11	MIDDLE_FINGER_DIP
+# 1	THUMB_CMC	        12	MIDDLE_FINGER_TIP
+# 2	THUMB_MCP	        13	RING_FINGER_MCP
+# 3	THUMB_IP	        14	RING_FINGER_PIP
+# 4	THUMB_TIP	        15	RING_FINGER_DIP
+# 5	INDEX_FINGER_MCP	16	RING_FINGER_TIP
+# 6	INDEX_FINGER_PIP	17	PINKY_MCP
+# 7	INDEX_FINGER_DIP	18	PINKY_PIP
+# 8	INDEX_FINGER_TIP	19	PINKY_DIP
+# 9	MIDDLE_FINGER_MCP	20	PINKY_TIP
+# 10 MIDDLE_FINGER_PIP		
+
+
 
 BaseOptions = mp.tasks.BaseOptions
 HandLandmarker = mp.tasks.vision.HandLandmarker
@@ -58,6 +76,7 @@ def main():
             drawLandmarks(frame, hand, HAND_CONNECTIONS)
 
 
+
         # display frame
         cv2.imshow("Robot hand tracker", frame)
 
@@ -69,6 +88,25 @@ def main():
     cam.release()
     detector.close()
     cv2.destroyAllWindows()
+
+
+# measures the angle in degrees between two bones
+def angle(bone1, bone2):
+    dot_prod = np.dot(bone1, bone2)
+    len_bone1 = np.linalg.norm(bone1)
+    len_bone2 = np.linalg.norm(bone2)
+
+    # safety check: zero-length vector has no angle
+    if len_bone2 == 0 or len_bone2 == 0:
+        return 0.0
+
+    cos_theta = dot_prod / (len_bone1 * len_bone2)
+
+    # forces cos_theta to be b/t -1 and 1 to avoid rounding errors
+    cos_theta = np.clip(cos_theta, -1, 1) 
+
+    theta_deg = np.degrees(np.arccos(cos_theta))
+    return theta_deg
 
 if __name__ == "__main__":
     main()
