@@ -2,6 +2,7 @@ import cv2 # import opencv
 import mediapipe as mp
 import time
 import numpy as np
+import serial
 
 # Hand landmark model
 
@@ -34,6 +35,12 @@ import numpy as np
     # Middle: 248 degrees
     # Ring: 238 degrees
     # Pinky: 220 degrees
+
+
+# Send data to Arduino in the format: thumb,index,middle,ring,pinky\n
+SERIAL_PORT = "/dev/cu.usbmodem101"
+BAUD_RATE = 115200
+
 
 # Calibrated constants
 OPEN_DEG   = {"thumb": 47, "index": 60, "middle": 45, "ring": 33, "pinky": 67}
@@ -69,6 +76,9 @@ def main():
 
     # creates the hand detector
     detector = HandLandmarker.create_from_options(options)
+
+    arduino = serial.Serial(port=SERIAL_PORT, baudrate=BAUD_RATE)
+    time.sleep(2) # Wait 2 seconds for arduino to boot
 
     start_time = time.time()
 
@@ -130,8 +140,16 @@ def main():
 
             cv2.putText(frame, str(count), (50, 120), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 6)
 
-            print(f"T: {thumb_bend_percent:.2f}, I: {index_bend_percent:.2f}, M: {middle_bend_percent:.2f}, R: {ring_bend_percent:.2f}, P: {pinky_bend_percent:.2f}")
+            print((f"T: {thumb_bend_percent:.2f}, I: {index_bend_percent:.2f}," 
+                   f"M: {middle_bend_percent:.2f}, R: {ring_bend_percent:.2f}," 
+                   f"P: {pinky_bend_percent:.2f}"))
 
+            message_data = (f"{round(thumb_bend_percent)},{round(index_bend_percent)},"
+                            f"{round(middle_bend_percent)},{round(ring_bend_percent)},"
+                            f"{round(pinky_bend_percent)}\n")
+
+            # Send message to arduino (in bytes)
+            arduino.write(message_data.encode())
 
         # display frame
         cv2.imshow("Robot hand tracker", frame)
@@ -144,6 +162,7 @@ def main():
     # close camera window, stop hand detection, close camera
     cam.release()
     detector.close()
+    arduino.close()
     cv2.destroyAllWindows()
 
 
