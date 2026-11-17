@@ -1,14 +1,22 @@
+// Requires: "Adafruit PWM Servo Driver Library"
 // Receive data from python script in the format: thumb,index,middle,ring,pinky\n
 
-#include <Servo.h>
 
-Servo servo;
+#include <Adafruit_PWMServoDriver.h>
+
+Adafruit_PWMServoDriver pca;
+
+//dummy test values until calibrated
+const int OPEN_MICRO_SECS = 1300;
+const int CLOSED_MICRO_SECS = 1700;
 
 void setup() {
   Serial.begin(115200); // Standard baud rate for arduino uno
-  servo.attach(10);
   Serial.println("ready");
 
+  pca.begin();
+  pca.setOscillatorFrequency(27000000); //(from library instructions)
+  pca.setPWMFreq(50); // Analog servos run at ~50 Hz updates (from library instructions)
 }
 
 void loop() {
@@ -44,9 +52,11 @@ void loop() {
     Serial.print(String("R: ") + bendPercents[3] + " ");
     Serial.println(String("P: ") + bendPercents[4]);
 
-    // Maps 0-100 bend percentage to servo's 0-180 degrees
-    int angle = map(bendPercents[1], 0, 100, 0, 180);
-    servo.write(angle);
+    // Maps 0-100 bend percentage to pulse length used by PCA board
+    for(int i = 0; i < 5; i++){
+      int pulse = map(bendPercents[i], 0, 100, OPEN_MICRO_SECS, CLOSED_MICRO_SECS);
+      pca.writeMicroseconds(i, pulse);
+    }
     
 
   }
