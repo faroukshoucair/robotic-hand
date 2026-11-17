@@ -20,6 +20,26 @@ import numpy as np
 
 
 
+# Calibration numbers:
+    # Open and relaxed:
+    # Thumb: 47 degrees
+    # Index: 60 degrees
+    # Middle: 45 degrees
+    # Ring: 33 degrees
+    # Pinky: 67 degrees
+
+    # Closed tightly:
+    # Thumb: 134 degrees
+    # Index: 217 degrees
+    # Middle: 248 degrees
+    # Ring: 238 degrees
+    # Pinky: 220 degrees
+
+# Calibrated constants
+OPEN_DEG   = {"thumb": 47, "index": 60, "middle": 45, "ring": 33, "pinky": 67}
+CLOSED_DEG = {"thumb": 134, "index": 217, "middle": 248, "ring": 238, "pinky": 220}
+
+
 BaseOptions = mp.tasks.BaseOptions
 HandLandmarker = mp.tasks.vision.HandLandmarker
 HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
@@ -84,11 +104,19 @@ def main():
             ring_bend_angle = bend_angle(world, [0, 13, 14, 15, 16])
             pinky_bend_angle = bend_angle(world, [0, 17, 18, 19, 20])
 
-            print(f"Thumb angle: {thumb_bend_angle:.2f}")
-            print(f"Index angle: {index_bend_angle:.2f}")
-            print(f"Middle angle: {middle_bend_angle:.2f}")
-            print(f"Ring angle: {ring_bend_angle:.2f}")
-            print(f"Pinky angle: {pinky_bend_angle:.2f}")
+            #print(f"Thumb angle: {thumb_bend_angle:.2f}")
+            #print(f"Index angle: {index_bend_angle:.2f}")
+            #print(f"Middle angle: {middle_bend_angle:.2f}")
+            #print(f"Ring angle: {ring_bend_angle:.2f}")
+            #print(f"Pinky angle: {pinky_bend_angle:.2f}")
+
+            thumb_bend_percent = bend_percent(thumb_bend_angle, "thumb")
+            index_bend_percent = bend_percent(index_bend_angle, "index")
+            middle_bend_percent = bend_percent(middle_bend_angle, "middle")
+            ring_bend_percent = bend_percent(ring_bend_angle, "ring")
+            pinky_bend_percent = bend_percent(pinky_bend_angle, "pinky")
+
+            print(f"T: {thumb_bend_percent:.2f}, I: {index_bend_percent:.2f}, M: {middle_bend_percent:.2f}, R: {ring_bend_percent:.2f}, P: {pinky_bend_percent:.2f}")
 
         # display frame
         cv2.imshow("Robot hand tracker", frame)
@@ -139,6 +167,17 @@ def bend_angle(world, ids):
         total_angle_bend += angle(bones[i], bones[i+1])
 
     return total_angle_bend
+
+
+# Map a finger's bend angle to a percentage 0(open) - 100(closed)
+def bend_percent(current_deg, finger):
+    open_deg = OPEN_DEG[finger]
+    closed_deg = CLOSED_DEG[finger]
+
+    fraction = (current_deg - open_deg) / (closed_deg - open_deg) # part of trip completed / total trip 
+    return np.clip(fraction*100, 0, 100)
+
+
 
 
 if __name__ == "__main__":
