@@ -40,7 +40,7 @@ OPEN_DEG   = {"thumb": 47, "index": 60, "middle": 45, "ring": 33, "pinky": 67}
 CLOSED_DEG = {"thumb": 134, "index": 217, "middle": 248, "ring": 238, "pinky": 220}
 
 # 40% and below is considered "finger up"
-FINGER_UP_THRESHOLD = 40
+FINGER_UP_THRESHOLD = 15
 
 
 BaseOptions = mp.tasks.BaseOptions
@@ -127,7 +127,7 @@ def main():
             for p in percents:
                 if p <= FINGER_UP_THRESHOLD:
                     count += 1
-                    
+
             cv2.putText(frame, str(count), (50, 120), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 6)
 
             print(f"T: {thumb_bend_percent:.2f}, I: {index_bend_percent:.2f}, M: {middle_bend_percent:.2f}, R: {ring_bend_percent:.2f}, P: {pinky_bend_percent:.2f}")
