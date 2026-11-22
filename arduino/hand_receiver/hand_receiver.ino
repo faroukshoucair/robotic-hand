@@ -23,11 +23,12 @@ const int CLOSED_DEG[5] = {70, 70, 70, 70, 110};
 
 void setup() {
   Serial.begin(115200); // Standard baud rate for arduino uno
-  Serial.println("ready");
 
   pca.begin();
   pca.setOscillatorFrequency(27000000); //(from library instructions)
   pca.setPWMFreq(50); // Analog servos run at ~50 Hz updates (from library instructions)
+
+  Serial.println("ready");
 }
 
 void loop() {
