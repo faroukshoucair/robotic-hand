@@ -1,4 +1,4 @@
-# 5 DOF Robotic Hand
+# 5 actuated DOF Robotic Hand
 
 3D-printed robotic hand that copies your hand movements in real time using a webcam, and recognizes how many fingers you're holding up.
 
