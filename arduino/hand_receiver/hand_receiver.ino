@@ -16,10 +16,10 @@
 
 Adafruit_PWMServoDriver pca;
 
-//dummy test values until calibrated
+//Calibrated values (not straining the servos)
 //CHannel:               0     1    2    3   4
 const int OPEN_DEG[5] = {165, 165, 165, 165, 165};  //Thumb, index, middle, ring + pinky, thumb rotation
-const int CLOSED_DEG[5] = {70, 70, 70, 70, 110};
+const int CLOSED_DEG[5] = {85, 76, 60, 70, 110};
 
 void setup() {
   Serial.begin(115200); // Standard baud rate for arduino uno
